@@ -59,14 +59,14 @@ function Verlet{T<:Real}(mass::Vector{T}, r0::Matrix{T}, v0::Matrix{T}, h::Real)
 	return (r_new, v_new)
 end
 
-const CONST_C1 = 0.1344961992774310892
-const CONST_C2 = -0.2248198030794208058
-const CONST_C3 = 0.7563200005156682911
-const CONST_C4 = 0.3340036032863214255
 const CONST_B1 = 0.5153528374311229364
 const CONST_B2 = -0.085782019412973646
 const CONST_B3 = 0.4415830236164665242
 const CONST_B4 = 0.1288461583653841854
+const CONST_C1 = 0.1344961992774310892
+const CONST_C2 = -0.2248198030794208058
+const CONST_C3 = 0.7563200005156682911
+const CONST_C4 = 0.3340036032863214255
 
 # 4th order symplectic
 function SIA4{T<:Real}(mass::Vector{T}, r0::Matrix{T}, v0::Matrix{T}, h::Real)
@@ -123,33 +123,38 @@ function PlutoSim(N::Integer, h::Real, M::Integer, f::Function)
     r[6,:] = [5.303572815981638E+00, -3.190544944470667E+01, 1.879962140526394E+00]
     v[6,:] = [3.156551097775996E-03, -1.132909607403660E-04, -9.009397396467777E-04]
     
-    NSteps = N
-    result = zeros(12,fld(NSteps, M))
+    Nsaves = fld(N,M)
+    result = zeros(12, Nsaves)
     println(size(result))
     println("Begin.")
-    tic()
-    sample = 0
-    t = 0.0
-    for i = 1:NSteps
-        if i % M == 0
-            sample += 1
-            result[ 1,sample] = r[1,1]
-            result[ 2,sample] = r[1,2]
-            result[ 3,sample] = r[2,1]
-            result[ 4,sample] = r[2,2]
-            result[ 5,sample] = r[3,1]
-            result[ 6,sample] = r[3,2]
-            result[ 7,sample] = r[4,1]
-            result[ 8,sample] = r[4,2]
-            result[ 9,sample] = r[5,1]
-            result[10,sample] = r[5,2]
-            result[11,sample] = r[6,1]
-            result[12,sample] = r[6,2]
+    t0 = time()
+    t_start = t0
+    for i = 1:Nsaves
+        t1 = time()
+        tot = t1 - t_start
+        delta = t1-t0
+        est = (tot / (i-1)) * (Nsaves - i)
+        @printf("%5d / %5d: last = %7.3f, total = %7.3f, remain = %7.3f\n", i, Nsaves, delta, tot, est)
+        t0 = t1
+        result[ 1,i] = r[1,1]
+        result[ 2,i] = r[1,2]
+        result[ 3,i] = r[2,1]
+        result[ 4,i] = r[2,2]
+        result[ 5,i] = r[3,1]
+        result[ 6,i] = r[3,2]
+        result[ 7,i] = r[4,1]
+        result[ 8,i] = r[4,2]
+        result[ 9,i] = r[5,1]
+        result[10,i] = r[5,2]
+        result[11,i] = r[6,1]
+        result[12,i] = r[6,2]
+        for j = 1:M
+            r,v = RungeKutta(mass, r, v, h)
         end
-        r,v = RungeKutta(mass, r, v, h)
     end
-    toc()
+    println("Writing output...")
     writecsv("output.txt", result)
+    println("Running plot script...")
     run(`python plotorbits.py`)
 end
 
