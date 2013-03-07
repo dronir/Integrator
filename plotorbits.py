@@ -4,17 +4,22 @@
 from pylab import *
 
 data = loadtxt("output.txt", delimiter=",")
-N = data.shape[1]
+N = data.shape[0]
 
 mass = array([1.988435e30, 1.8988e27, 5.685e26, 8.6625e25, 1.0278e26, 1.314e22])
 
-CoM = zeros((2,N))
+print data.shape
+
+CoM = zeros((N,3))
 for i in xrange(N):
-    CoM[0,i] = sum(mass * data[0::2, i]) / sum(mass)
-    CoM[1,i] = sum(mass * data[1::2, i]) / sum(mass)
+    CoM[i,0] = sum(mass * data[i, 0::6]) / sum(mass)
+    CoM[i,1] = sum(mass * data[i, 1::6]) / sum(mass)
+    CoM[i,2] = sum(mass * data[i, 2::6]) / sum(mass)
+    print CoM[i,:]
 
 colors = ["Yellow", "Red", "Orange", "Blue", "Green", "Black"]
 
 for i in xrange(6):
-    scatter(data[2*i,:] - CoM[0,:], data[2*i+1,:] - CoM[1,:], 1, color=colors[i])
+    print 6*i, 6*i+1
+    scatter(data[:,6*i], data[:,6*i+1], 1, color=colors[i])
 show()

@@ -59,28 +59,28 @@ function Verlet{T<:Real}(mass::Vector{T}, r0::Matrix{T}, v0::Matrix{T}, h::Real)
 	return (r_new, v_new)
 end
 
-const CONST_B1 = 0.5153528374311229364
+const CONST_B1 =  0.5153528374311229364
 const CONST_B2 = -0.085782019412973646
-const CONST_B3 = 0.4415830236164665242
-const CONST_B4 = 0.1288461583653841854
-const CONST_C1 = 0.1344961992774310892
+const CONST_B3 =  0.4415830236164665242
+const CONST_B4 =  0.1288461583653841854
+const CONST_C1 =  0.1344961992774310892
 const CONST_C2 = -0.2248198030794208058
-const CONST_C3 = 0.7563200005156682911
-const CONST_C4 = 0.3340036032863214255
+const CONST_C3 =  0.7563200005156682911
+const CONST_C4 =  0.3340036032863214255
 
 # 4th order symplectic
-function SIA4{T<:Real}(mass::Vector{T}, r0::Matrix{T}, v0::Matrix{T}, h::Real)
-    r1 = r0 + CONST_C1 * v0*h
+function SIA4{T<:Real}(mass::Vector{T}, r0::Matrix{T}, v0::Matrix{T}, h::Real)    
     v1 = v0 + CONST_B1 * potential(mass, r0)*h
+    r1 = r0 + CONST_C1 * v1*h
     
-    r2 = r1 + CONST_C2 * v1*h
     v2 = v1 + CONST_B2 * potential(mass, r1)*h
+    r2 = r1 + CONST_C2 * v2*h
     
-    r3 = r2 + CONST_C3 * v2*h
     v3 = v2 + CONST_B3 * potential(mass, r2)*h
+    r3 = r2 + CONST_C3 * v3*h
     
-    r4 = r3 + CONST_C4 * v3*h
     v4 = v3 + CONST_B4 * potential(mass, r3)*h
+    r4 = r3 + CONST_C4 * v4*h
     return (r4, v4)
 end
 
@@ -124,38 +124,47 @@ function PlutoSim(N::Integer, h::Real, M::Integer, f::Function)
     v[6,:] = [3.156551097775996E-03, -1.132909607403660E-04, -9.009397396467777E-04]
     
     Nsaves = fld(N,M)
-    result = zeros(12, Nsaves)
+    result = zeros(Nsaves+1, 36)
     println(size(result))
     println("Begin.")
     t0 = time()
     t_start = t0
     for i = 1:Nsaves
+        # Print time statistics
         t1 = time()
         tot = t1 - t_start
         delta = t1-t0
         est = (tot / (i-1)) * (Nsaves - i)
         @printf("%5d / %5d: last = %7.3f, total = %7.3f, remain = %7.3f\n", i, Nsaves, delta, tot, est)
         t0 = t1
-        result[ 1,i] = r[1,1]
-        result[ 2,i] = r[1,2]
-        result[ 3,i] = r[2,1]
-        result[ 4,i] = r[2,2]
-        result[ 5,i] = r[3,1]
-        result[ 6,i] = r[3,2]
-        result[ 7,i] = r[4,1]
-        result[ 8,i] = r[4,2]
-        result[ 9,i] = r[5,1]
-        result[10,i] = r[5,2]
-        result[11,i] = r[6,1]
-        result[12,i] = r[6,2]
+        # Save results
+        for p = 1:6            
+            result[i, 6*(p-1)+1] = r[p,1]
+            result[i, 6*(p-1)+2] = r[p,2]
+            result[i, 6*(p-1)+3] = r[p,3]
+            result[i, 6*(p-1)+4] = v[p,1]
+            result[i, 6*(p-1)+5] = v[p,2]
+            result[i, 6*(p-1)+6] = v[p,3] 
+        end
+        # Actual computation
         for j = 1:M
-            r,v = RungeKutta(mass, r, v, h)
+            r,v = f(mass, r, v, h)
         end
     end
+    # Save last results
+    for p = 1:6            
+        result[Nsaves+1, 6*(p-1)+1] = r[p,1]
+        result[Nsaves+1, 6*(p-1)+2] = r[p,2]
+        result[Nsaves+1, 6*(p-1)+3] = r[p,3]
+        result[Nsaves+1, 6*(p-1)+4] = v[p,1]
+        result[Nsaves+1, 6*(p-1)+5] = v[p,2]
+        result[Nsaves+1, 6*(p-1)+6] = v[p,3] 
+    end
+    
     println("Writing output...")
     writecsv("output.txt", result)
 #    println("Running plot script...")
-#    run(`python plotorbits.py`)
+    run(`python plotorbits.py`)
 end
 
 
