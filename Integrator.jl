@@ -164,7 +164,7 @@ function PlutoSim(N::Integer, h::Real, M::Integer, f::Function)
     println("Writing output...")
     writecsv("output.txt", result)
 #    println("Running plot script...")
-    run(`python plotorbits.py`)
+#    run(`python plotorbits.py`)
 end
 
 
