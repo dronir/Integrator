@@ -2,8 +2,14 @@
 #coding: utf8
 
 from pylab import *
+from sys import argv
 
-data = loadtxt("output.txt", delimiter=",")
+if len(argv) < 2:
+    filename = "output.txt"
+else:
+    filename = argv[1]
+    
+data = loadtxt(filename, delimiter=",")
 N = data.shape[0]
 
 mass = array([1.988435e30, 1.8988e27, 5.685e26, 8.6625e25, 1.0278e26, 1.314e22])
@@ -21,5 +27,5 @@ colors = ["Yellow", "Red", "Orange", "Blue", "Green", "Black"]
 
 for i in xrange(6):
     print 6*i, 6*i+1
-    scatter(data[:,6*i], data[:,6*i+1], 1, color=colors[i])
+    scatter(data[:,6*i] - CoM[:,0], data[:,6*i+1] - CoM[:,1], 1, color=colors[i])
 show()
