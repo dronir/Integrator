@@ -24,8 +24,6 @@ function getindex{T}(a::IVector{T}, i::Integer)
     end
 end
 
-getindex{T<:Real}(A::Array{IVector{T}}, i::Integer, j::Integer) = A[i][j]
-
 convert{T<:Real}(::Type{IVector{T}}, a::Array{T,1})= size(a,1) != 3 ? throw("Conversion error") : IVector(a[1], a[2], a[3])
 
 zero{T<:Real}(::Type{IVector{T}}) = IVector{T}(zero(T), zero(T), zero(T))

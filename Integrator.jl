@@ -5,7 +5,7 @@ module Integrator
 
 using MyVec
 
-export PlutoSim, Verlet, RungeKutta, SIA4
+export PlutoSim, SIA4
 
 
 #const G = 6.67398e-11 # G in basic SI units
@@ -107,12 +107,12 @@ function PlutoSim(N::Integer, h::Real, M::Integer, f::Function)
         t0 = t1
         # Save results
         for p = 1:6            
-            result[i, 6*(p-1)+1] = r[p,1]
-            result[i, 6*(p-1)+2] = r[p,2]
-            result[i, 6*(p-1)+3] = r[p,3]
-            result[i, 6*(p-1)+4] = v[p,1]
-            result[i, 6*(p-1)+5] = v[p,2]
-            result[i, 6*(p-1)+6] = v[p,3] 
+            result[i, 6*(p-1)+1] = r[p][1]
+            result[i, 6*(p-1)+2] = r[p][2]
+            result[i, 6*(p-1)+3] = r[p][3]
+            result[i, 6*(p-1)+4] = v[p][1]
+            result[i, 6*(p-1)+5] = v[p][2]
+            result[i, 6*(p-1)+6] = v[p][3] 
         end
         # Actual computation
         for j = 1:M
@@ -121,12 +121,12 @@ function PlutoSim(N::Integer, h::Real, M::Integer, f::Function)
     end
     # Save last results
     for p = 1:6            
-        result[Nsaves+1, 6*(p-1)+1] = r[p,1]
-        result[Nsaves+1, 6*(p-1)+2] = r[p,2]
-        result[Nsaves+1, 6*(p-1)+3] = r[p,3]
-        result[Nsaves+1, 6*(p-1)+4] = v[p,1]
-        result[Nsaves+1, 6*(p-1)+5] = v[p,2]
-        result[Nsaves+1, 6*(p-1)+6] = v[p,3] 
+        result[Nsaves+1, 6*(p-1)+1] = r[p][1]
+        result[Nsaves+1, 6*(p-1)+2] = r[p][2]
+        result[Nsaves+1, 6*(p-1)+3] = r[p][3]
+        result[Nsaves+1, 6*(p-1)+4] = v[p][1]
+        result[Nsaves+1, 6*(p-1)+5] = v[p][2]
+        result[Nsaves+1, 6*(p-1)+6] = v[p][3] 
     end
     
     println("Writing output...")
