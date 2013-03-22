@@ -15,23 +15,23 @@ function potential{T<:Real}(mass::Vector{T}, r::Matrix{T})
     a = zeros(1,3)
     for i = 1:N
         for j = i+1:N
-            d = r[j,:] - r[i,:]
-#            d[1] = r[j,1]-r[i,1]
-#            d[2] = r[j,2]-r[i,2]
-#            d[3] = r[j,3]-r[i,3]
+#            d = r[j,:] - r[i,:]
+            d[1] = r[j,1]-r[i,1]
+            d[2] = r[j,2]-r[i,2]
+            d[3] = r[j,3]-r[i,3]
             F = G / norm(d)^3
-            a = F * d
-#            a[1] = d[1] * F
-#            a[2] = d[2] * F
-#            a[3] = d[3] * F
-            out[i,:] += mass[j] .* a
-#            out[i,1] += mass[j] * a[1]
-#            out[i,2] += mass[j] * a[2]
-#            out[i,3] += mass[j] * a[3]
-            out[j,:] -= mass[j] .* a
-#            out[j,1] -= mass[i] * a[1]
-#            out[j,2] -= mass[i] * a[2]
-#            out[j,3] -= mass[i] * a[3]
+#            a = F * d
+            a[1] = d[1] * F
+            a[2] = d[2] * F
+            a[3] = d[3] * F
+#            out[i,:] += mass[j] .* a
+            out[i,1] += mass[j] * a[1]
+            out[i,2] += mass[j] * a[2]
+            out[i,3] += mass[j] * a[3]
+#            out[j,:] -= mass[j] .* a
+            out[j,1] -= mass[i] * a[1]
+            out[j,2] -= mass[i] * a[2]
+            out[j,3] -= mass[i] * a[3]
         end
     end
     out
