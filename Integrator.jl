@@ -28,7 +28,7 @@ function potential{T<:Real}(mass::Vector{T}, r::Matrix{T})
             out[i,1] += mass[j] * a[1]
             out[i,2] += mass[j] * a[2]
             out[i,3] += mass[j] * a[3]
-#            out[j,:] -= mass[j] .* a
+#            out[j,:] -= mass[i] .* a
             out[j,1] -= mass[i] * a[1]
             out[j,2] -= mass[i] * a[2]
             out[j,3] -= mass[i] * a[3]
