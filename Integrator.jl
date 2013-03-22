@@ -3,7 +3,7 @@
 
 module Integrator
 
-export PlutoSim, Verlet, RungeKutta, SIA4
+export PlutoSim, SIA4
 
 #const G = 6.67398e-11 # G in basic SI units
 const G = 1.48811382e-34 # G in units of AU and day
@@ -15,50 +15,30 @@ function potential{T<:Real}(mass::Vector{T}, r::Matrix{T})
     a = zeros(1,3)
     for i = 1:N
         for j = i+1:N
-            d[1] = r[j,1]-r[i,1]
-            d[2] = r[j,2]-r[i,2]
-            d[3] = r[j,3]-r[i,3]
+            d = r[j,:] - r[i,:]
+#            d[1] = r[j,1]-r[i,1]
+#            d[2] = r[j,2]-r[i,2]
+#            d[3] = r[j,3]-r[i,3]
             F = G / norm(d)^3
-            a[1] = d[1] * F
-            a[2] = d[2] * F
-            a[3] = d[3] * F
-            out[i,1] += mass[j] * a[1]
-            out[i,2] += mass[j] * a[2]
-            out[i,3] += mass[j] * a[3]
-            out[j,1] -= mass[i] * a[1]
-            out[j,2] -= mass[i] * a[2]
-            out[j,3] -= mass[i] * a[3]
+            a = F * d
+#            a[1] = d[1] * F
+#            a[2] = d[2] * F
+#            a[3] = d[3] * F
+            out[i,:] += mass[j] .* a
+#            out[i,1] += mass[j] * a[1]
+#            out[i,2] += mass[j] * a[2]
+#            out[i,3] += mass[j] * a[3]
+            out[j,:] -= mass[j] .* a
+#            out[j,1] -= mass[i] * a[1]
+#            out[j,2] -= mass[i] * a[2]
+#            out[j,3] -= mass[i] * a[3]
         end
     end
     out
 end
 
-# 4th order Runge-Kutta for
-function RungeKutta{T<:Real}(mass::Vector{T}, r0::Matrix{T}, v0::Matrix{T}, h::Real)
-	k1 = h * potential(mass, r0)
-	l1 = h * v0
-	k2 = h * potential(mass, r0 + 0.5*l1)
-	l2 = h * (v0 + k1*0.5)
-	k3 = h * potential(mass, r0 + 0.5*l2)
-	l3 = h * (v0 + k2*0.5)
-	k4 = h * potential(mass, r0 + l3)
-	l4 = h * (v0 + k3)
-	r_new = r0 + (l1 + 2.0*l2 + 2.0*l3 + l4) / 6.0
-	v_new = v0 + (k1 + 2.0*k2 + 2.0*k3 + k4) / 6.0
-	return (r_new, v_new)
-end
 
-
-
-
-# Velocity Verlet
-function Verlet{T<:Real}(mass::Vector{T}, r0::Matrix{T}, v0::Matrix{T}, h::Real)
-	a0 = potential(mass, r0)
-	r_new = r0 + v0*h + 0.5*a0*h^2
-	v_new = v0 + 0.5*(a0 + potential(mass, r_new)) * h
-	return (r_new, v_new)
-end
-
+# Magic constants for the SIA4 algorithm
 const CONST_B1 =  0.5153528374311229364
 const CONST_B2 = -0.085782019412973646
 const CONST_B3 =  0.4415830236164665242
@@ -70,27 +50,23 @@ const CONST_C4 =  0.3340036032863214255
 
 # 4th order symplectic
 function SIA4{T<:Real}(mass::Vector{T}, r0::Matrix{T}, v0::Matrix{T}, h::Real)    
-    v1 = v0 + CONST_B1 * potential(mass, r0)*h
-    r1 = r0 + CONST_C1 * v1*h
+    v1 = v0 + CONST_B1 * h * potential(mass, r0)
+    r1 = r0 + CONST_C1 * h * v1
     
-    v2 = v1 + CONST_B2 * potential(mass, r1)*h
-    r2 = r1 + CONST_C2 * v2*h
+    v2 = v1 + CONST_B2 * h * potential(mass, r1)
+    r2 = r1 + CONST_C2 * h * v2
     
-    v3 = v2 + CONST_B3 * potential(mass, r2)*h
-    r3 = r2 + CONST_C3 * v3*h
+    v3 = v2 + CONST_B3 * h * potential(mass, r2)
+    r3 = r2 + CONST_C3 * h * v3
     
-    v4 = v3 + CONST_B4 * potential(mass, r3)*h
-    r4 = r3 + CONST_C4 * v4*h
+    v4 = v3 + CONST_B4 * h * potential(mass, r3)
+    r4 = r3 + CONST_C4 * h * v4
     return (r4, v4)
 end
 
 
 
-PlutoSim(N::Integer, h::Real) = PlutoSim(N,h,100,Verlet)
-PlutoSim(N::Integer, h::Real, M::Integer) = PlutoSim(N,h,M,Verlet)
-
-
-function PlutoSim(N::Integer, h::Real, M::Integer, f::Function)
+function PlutoSim(N::Integer, h::Real, M::Integer)
     r = zeros(6,3)
     v = zeros(6,3)
     mass = zeros(6)
@@ -148,7 +124,7 @@ function PlutoSim(N::Integer, h::Real, M::Integer, f::Function)
         end
         # Actual computation
         for j = 1:M
-            r,v = f(mass, r, v, h)
+            r,v = SIA4(mass, r, v, h)
         end
     end
     # Save last results
