@@ -54,11 +54,7 @@ end
 
 
 
-PlutoSim(N::Integer, h::Real) = PlutoSim(N,h,100,Verlet)
-PlutoSim(N::Integer, h::Real, M::Integer) = PlutoSim(N,h,M,Verlet)
-
-
-function PlutoSim(N::Integer, h::Real, M::Integer, f::Function)
+function PlutoSim(N::Integer, h::Real, M::Integer)
     r = Array(IVector{Float64}, 6)
     v = Array(IVector{Float64}, 6)
 #    mass = zeros(6)
