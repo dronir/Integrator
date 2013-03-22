@@ -30,7 +30,7 @@ convert{T<:Real}(::Type{IVector{T}}, a::Array{T,1})= size(a,1) != 3 ? throw("Con
 
 zero{T<:Real}(::Type{IVector{T}}) = IVector{T}(zero(T), zero(T), zero(T))
 
-norm{T<:Real}(V::IVector{T}) = V.x^2 + V.y^2 + V.z^2
+norm{T<:Real}(V::IVector{T}) = sqrt(V.x^2 + V.y^2 + V.z^2)
 
 +{T<:Real}(a::IVector{T}, b::IVector{T}) = IVector{T}(a.x+b.x, a.y+b.y, a.z+b.z)
 -{T<:Real}(a::IVector{T}, b::IVector{T}) = IVector{T}(a.x-b.x, a.y-b.y, a.z-b.z)
