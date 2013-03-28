@@ -26,7 +26,6 @@ function potential{T<:Real}(mass::Vector{T}, r::Vector{IVector{T}})
     out
 end
 
-
 # Magic constants for the SIA4 algorithm
 const CONST_B1 =  0.5153528374311229364
 const CONST_B2 = -0.085782019412973646
@@ -39,8 +38,8 @@ const CONST_C4 =  0.3340036032863214255
 
 # 4th order symplectic
 function SIA4{T<:Real}(mass::Vector{T}, r0::Vector{IVector{T}}, v0::Vector{IVector{T}}, h::Real)    
-    v1 = v0 + CONST_B1 * potential(mass, r0)*h
-    r1 = r0 + CONST_C1 * v1*h
+    v1 = v0 + CONST_B1 * h * potential(mass, r0)
+    r1 = r0 + CONST_C1 * h * v1
     
     v2 = v1 + CONST_B2 * h * potential(mass, r1)
     r2 = r1 + CONST_C2 * h * v2
